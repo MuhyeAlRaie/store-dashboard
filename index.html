@@ -193,8 +193,9 @@ setTimeout(() => {
         .then(data => {
           const tbody = document.querySelector("#ordersTable tbody");
           tbody.innerHTML = '';
+        
 
-          data.forEach(order => {
+          data.filter(p => p.name && p.name.trim() !== '').forEach(order => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td>${order.name}</td>
