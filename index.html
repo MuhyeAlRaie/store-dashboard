@@ -18,7 +18,18 @@
   </style>
 </head>
 <body class="p-4">
-  <div class="container">
+
+<div id="loginBox" style="max-width: 300px; margin: 100px auto;">
+  <h5 class="text-center mb-3">🔐 تسجيل الدخول</h5>
+  <input type="text" id="adminUsername" placeholder="اسم المستخدم" class="form-control mb-2">
+  <input type="password" id="adminPassword" placeholder="كلمة المرور" class="form-control mb-2">
+  <button onclick="verifyLogin()" class="btn btn-primary w-100">دخول</button>
+  <div id="loginError" class="text-danger mt-2 text-center"></div>
+</div>
+
+<div id="dashboardContent" style="display:none;">
+  <!-- لوحة التحكم الكاملة هنا -->
+    <div class="container">
     <h2 class="mb-4">🛒 لوحة تحكم المتجر</h2>
 
     <!-- قسم عرض وإدارة المنتجات -->
@@ -97,7 +108,45 @@
       </div>
     </div>
   </div>
+</div>
 
+ 
+<script>
+  const LOGIN_API = "https://script.google.com/macros/s/AKfycbyjhVoFuBThqJlBensobrcyh8hFIEGO44l_wb8MCFH1xsEJf2DnD3UMtSblUxosBi5gKg/exec"; // ← غيّر إلى رابطك
+
+  function verifyLogin() {
+    const username = document.getElementById("adminUsername").value;
+    const password = document.getElementById("adminPassword").value;
+
+    fetch(LOGIN_API, {
+      method: "POST",
+      body: JSON.stringify({ username, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        localStorage.setItem("dashboard-auth", "true");
+        showDashboard();
+      } else {
+        document.getElementById("loginError").textContent = "❌ بيانات الدخول غير صحيحة";
+      }
+    })
+    .catch(() => {
+      document.getElementById("loginError").textContent = "⚠️ خطأ في الاتصال بالسيرفر";
+    });
+  }
+
+  function showDashboard() {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("dashboardContent").style.display = "block";
+  }
+
+  window.onload = () => {
+    if (localStorage.getItem("dashboard-auth") === "true") {
+      showDashboard();
+    }
+  };
+</script>
   <script>
     const PRODUCTS_API_URL = "https://script.google.com/macros/s/AKfycbyQ1eG5EynTHOpxJNFQBVJiAU5QTX880Y-jctfM1GS1UVkpOXOFZ_SEqI1GTAQ87UUPhA/exec";
     const ORDERS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec";
