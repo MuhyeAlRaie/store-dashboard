@@ -29,6 +29,14 @@
 
 <div id="dashboardContent" style="display:none;">
   <!-- لوحة التحكم الكاملة هنا -->
+   <button onclick="logout()" class="btn btn-outline-danger btn-sm">🚪 تسجيل الخروج</button>
+
+<script>
+  function logout() {
+    localStorage.removeItem("dashboard-auth");
+    location.reload();
+  }
+</script>
     <div class="container">
     <h2 class="mb-4">🛒 لوحة تحكم المتجر</h2>
 
