@@ -94,7 +94,7 @@
   </div>
 
   <script>
-    const PRODUCTS_API_URL = "https://script.google.com/macros/s/AKfycbxn4D8F8pC0bsR_pNNOHntfWZaVpH78priC_jW-GvkQ-Ja3_ILUkE5mGx8Dv8ZS4u7rEw/exec";
+    const PRODUCTS_API_URL = "https://script.google.com/macros/s/AKfycbyQ1eG5EynTHOpxJNFQBVJiAU5QTX880Y-jctfM1GS1UVkpOXOFZ_SEqI1GTAQ87UUPhA/exec";
     const ORDERS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec";
 
     // تحميل المنتجات
@@ -114,7 +114,9 @@
               <td>${p.category}</td>
               <td>${p.shortDesc}</td>
               <td>${p.available}</td>
-              <td><button class="btn btn-sm btn-warning" onclick='editProduct(${JSON.stringify(p)})'>✎</button></td>`;
+              <td>
+               <button class="btn btn-sm btn-warning me-1" onclick='editProduct(${JSON.stringify(p)})'>✎</button>
+               <button class="btn btn-sm btn-danger" onclick='deleteProduct("${p.id}")'>🗑️</button></td>` ;
             tbody.appendChild(tr);
           });
         });
@@ -219,6 +221,25 @@ setTimeout(() => {
     const match = name.includes(keyword) || date.includes(keyword);
     row.style.display = match ? "" : "none";
   });
+}
+
+function deleteProduct(productId) {
+  if (!confirm("❗ هل أنت متأكد أنك تريد حذف هذا المنتج؟")) return;
+
+  fetch(PRODUCTS_API_URL, {
+    method: "DELETE",
+    body: JSON.stringify({ id: productId })
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.success) {
+      alert("✅ تم حذف المنتج");
+      loadProducts();
+    } else {
+      alert("❌ فشل الحذف: " + res.message);
+    }
+  })
+  .catch(() => alert("❌ خطأ أثناء الاتصال بالحذف"));
 }
 
     loadProducts();
