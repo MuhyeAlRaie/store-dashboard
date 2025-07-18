@@ -327,21 +327,25 @@ setTimeout(() => {
 function printInvoice(order) {
   const invoiceWindow = window.open('', '_blank');
   const itemsList = order.items?.split('\n').map(item => `<li>${item}</li>`).join('') || '';
+  const logoUrl = "https://yourdomain.com/logo.png"; // ← استبدل هذا الرابط برابط شعار متجرك الحقيقي
 
   const html = `
     <html dir="rtl" lang="ar">
     <head>
       <title>فاتورة الطلب</title>
       <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h2 { text-align: center; }
-        ul { list-style: none; padding: 0; }
-        .label { font-weight: bold; }
+        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+        h2 { text-align: center; margin-bottom: 20px; }
+        ul { list-style: none; padding: 0; margin: 0; }
+        .label { font-weight: bold; display: inline-block; width: 120px; }
         .total { font-size: 1.2em; color: green; }
-        .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+        .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 6px; background: #f9f9f9; }
+        .logo { display: block; max-width: 150px; margin: 0 auto 20px; }
+        hr { margin: 30px 0; border: none; border-top: 1px solid #ccc; }
       </style>
     </head>
     <body>
+      <img src="${logoUrl}" alt="Logo" class="logo">
       <h2>🧾 فاتورة الطلب</h2>
 
       <div class="box"><span class="label">الاسم:</span> ${order.name}</div>
@@ -358,6 +362,7 @@ function printInvoice(order) {
 
       <div class="box"><span class="label">رسوم التوصيل:</span> ${order.deliveryFee} د.أ</div>
       <div class="box"><span class="label">الخصم:</span> ${order.discountAmount} د.أ</div>
+      ${order.coupon ? `<div class="box"><span class="label">كود الخصم:</span> ${order.coupon}</div>` : ''}
       <div class="box total"><span class="label">الإجمالي:</span> ${order.total} د.أ</div>
 
       <hr>
@@ -370,7 +375,6 @@ function printInvoice(order) {
   invoiceWindow.document.write(html);
   invoiceWindow.document.close();
 
-  // ✅ انتظر تحميل النافذة ثم اطبع
   invoiceWindow.onload = () => {
     invoiceWindow.print();
   };
