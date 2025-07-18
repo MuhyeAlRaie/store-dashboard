@@ -37,8 +37,23 @@
     location.reload();
   }
 </script>
+
     <div class="container">
     <h2 class="mb-4">🛒 لوحة تحكم المتجر</h2>
+<div class="row text-center mb-4" id="dashboardStats">
+  <div class="col-md-6 mb-3">
+    <div class="card p-3 shadow">
+      <h5>📦 عدد الطلبات</h5>
+      <div id="ordersCount" class="h3 text-primary">--</div>
+    </div>
+  </div>
+  <div class="col-md-6 mb-3">
+    <div class="card p-3 shadow">
+      <h5>💰 إجمالي المبيعات</h5>
+      <div id="totalRevenue" class="h3 text-success">--</div>
+    </div>
+  </div>
+</div>
 
     <!-- قسم عرض وإدارة المنتجات -->
     <div class="section">
@@ -159,7 +174,7 @@
   <script>
     const PRODUCTS_API_URL = "https://script.google.com/macros/s/AKfycbyQ1eG5EynTHOpxJNFQBVJiAU5QTX880Y-jctfM1GS1UVkpOXOFZ_SEqI1GTAQ87UUPhA/exec";
     const ORDERS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec";
-
+    const STATS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec?stats=true"; // ← ضع رابط Web App الصحيح
     // تحميل المنتجات
     function loadProducts() { 
   fetch(PRODUCTS_API_URL)
@@ -277,6 +292,20 @@ setTimeout(() => {
           });
         });
     }
+
+    function loadStats() {
+
+  fetch(STATS_API_URL)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("ordersCount").textContent = data.orders;
+      document.getElementById("totalRevenue").textContent = data.revenue + " د.أ";
+    })
+    .catch(() => {
+      document.getElementById("ordersCount").textContent = "--";
+      document.getElementById("totalRevenue").textContent = "--";
+    });
+}
 
     function filterOrders() {
   const keyword = document.getElementById("searchOrdersInput").value.toLowerCase();
