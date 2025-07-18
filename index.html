@@ -9,6 +9,12 @@
     .table-responsive { max-height: 400px; overflow-y: auto; }
     .section { margin-bottom: 60px; }
     pre { white-space: pre-wrap; word-wrap: break-word; }
+    #product-message {
+  font-weight: bold;
+  text-align: center;
+  font-size: 1rem;
+  z-index: 9999;
+}
   </style>
 </head>
 <body class="p-4">
@@ -51,7 +57,7 @@
             <div class="mb-2"><input class="form-control" id="product-images" placeholder="رابط الصور (مفصولة بفاصلة)"></div>
             <div class="mb-2"><input class="form-control" id="product-available" placeholder="متوفر؟ yes/no"></div>
             <button class="btn btn-success w-100" type="submit">💾 حفظ المنتج</button>
-            <div id="product-message" class="mt-2 text-success fw-bold" style="display: none;"></div>
+            <div id="product-message" class="alert alert-success mt-3" role="alert" style="display: none;"></div>
 
           </form>
         </div>
@@ -155,12 +161,24 @@
     idField.value = "";
 
     const messageEl = document.getElementById("product-message");
-    messageEl.textContent = isEdit ? "✅ تم تعديل المنتج بنجاح" : "✅ تم إضافة المنتج";
-    messageEl.style.display = "block";
+messageEl.textContent = isEdit
+  ? "✅ تم تعديل المنتج بنجاح"
+  : "✅ تم إضافة المنتج";
+messageEl.className = "alert alert-success mt-3";
+messageEl.style.display = "block";
 
-    setTimeout(() => messageEl.style.display = "none", 3000);
+setTimeout(() => {
+  messageEl.style.display = "none";
+}, 3000);
+  }).catch(() => {
+    const messageEl = document.getElementById("product-message");
+    messageEl.classList.remove("alert-success");
+    messageEl.classList.add("alert-danger");
+    messageEl.innerHTML = "❌ فشل في الحفظ، تحقق من الاتصال";
+    messageEl.style.display = "block";
   });
 });
+
 
 
     // تحميل الطلبات
