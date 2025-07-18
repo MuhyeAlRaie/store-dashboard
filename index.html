@@ -326,9 +326,30 @@ setTimeout(() => {
 
 function printInvoice(order) {
   const invoiceWindow = window.open('', '_blank');
-  const itemsList = order.items?.split('\n').map(item => `<li>${item}</li>`).join('') || '';
-  const logoUrl = "https://yourdomain.com/logo.png"; // ← استبدل هذا الرابط برابط شعار متجرك الحقيقي
+  const logoUrl = "logo.png"; // ← استبدله برابط شعار متجرك
 
+  // تاريخ و رقم الطلب
+  const orderDate = new Date(order.date || order.Timestamp || Date.now());
+  const formattedDate = orderDate.toLocaleString();
+  const orderNumber = orderDate.getTime().toString().slice(-6); // آخر 6 أرقام من التوقيت
+
+  // تحويل المنتجات لصفوف جدول
+  const itemsTable = order.items?.split('\n').map(line => {
+    const parts = line.split(' x ');
+    const name = parts[0]?.trim() || '';
+    const quantity = parseInt(parts[1]?.split(' = ')[0]) || 1;
+    const unitPrice = parseFloat(parts[1]?.split('=')[1]) || 0;
+    const subtotal = quantity * unitPrice;
+
+    return `<tr>
+      <td>${name}</td>
+      <td>${quantity}</td>
+      <td>${unitPrice.toFixed(2)}</td>
+      <td>${subtotal.toFixed(2)}</td>
+    </tr>`;
+  }).join('') || '';
+
+  // محتوى الصفحة
   const html = `
     <html dir="rtl" lang="ar">
     <head>
@@ -336,18 +357,21 @@ function printInvoice(order) {
       <style>
         body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
         h2 { text-align: center; margin-bottom: 20px; }
-        ul { list-style: none; padding: 0; margin: 0; }
-        .label { font-weight: bold; display: inline-block; width: 120px; }
+        .label { font-weight: bold; display: inline-block; width: 130px; }
         .total { font-size: 1.2em; color: green; }
         .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 6px; background: #f9f9f9; }
         .logo { display: block; max-width: 150px; margin: 0 auto 20px; }
-        hr { margin: 30px 0; border: none; border-top: 1px solid #ccc; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background-color: #eee; }
       </style>
     </head>
     <body>
       <img src="${logoUrl}" alt="Logo" class="logo">
       <h2>🧾 فاتورة الطلب</h2>
 
+      <div class="box"><span class="label">رقم الطلب:</span> #${orderNumber}</div>
+      <div class="box"><span class="label">تاريخ الطلب:</span> ${formattedDate}</div>
       <div class="box"><span class="label">الاسم:</span> ${order.name}</div>
       <div class="box"><span class="label">الهاتف:</span> ${order.phone}</div>
       <div class="box"><span class="label">البريد الإلكتروني:</span> ${order.email || '---'}</div>
@@ -356,8 +380,20 @@ function printInvoice(order) {
       <div class="box"><span class="label">طريقة الدفع:</span> ${order.payment}</div>
 
       <div class="box">
-        <span class="label">المنتجات:</span>
-        <ul>${itemsList}</ul>
+        <span class="label">تفاصيل المنتجات:</span>
+        <table>
+          <thead>
+            <tr>
+              <th>المنتج</th>
+              <th>العدد</th>
+              <th>السعر الفردي</th>
+              <th>المجموع</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsTable}
+          </tbody>
+        </table>
       </div>
 
       <div class="box"><span class="label">رسوم التوصيل:</span> ${order.deliveryFee} د.أ</div>
