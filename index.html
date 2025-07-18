@@ -342,6 +342,21 @@ function deleteProduct(productId) {
     loadProducts();
     loadOrders();
     loadStats();
+window.onload = () => {
+  if (localStorage.getItem("dashboard-auth") === "true") {
+    showDashboard();
+    loadProducts();
+    loadOrders();
+    loadStats();
+
+    // ✅ تحديث كل 10 ثوانٍ (10000 ميلي ثانية)
+    setInterval(() => {
+      loadProducts();
+      loadOrders();
+      loadStats();
+    }, 10000);
+  }
+};
 
     const cloudName = "dezvuqqrl"; // استبدله باسم حسابك في Cloudinary
 const uploadPreset = "unsigned_preset"; // استبدله بـ unsigned preset من Cloudinary
