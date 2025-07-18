@@ -287,7 +287,10 @@ setTimeout(() => {
               <td>${order.discountAmount}</td>
               <td>${order.coupon}</td>
               <td>${order.total}</td>
-              <td>${new Date(order.date || order.Timestamp).toLocaleString()}</td>`;
+              <td>${new Date(order.date || order.Timestamp).toLocaleString()}</td>
+              <td>
+  <button class="btn btn-sm btn-outline-secondary" onclick='printInvoice(${JSON.stringify(order)})'>🧾 طباعة</button>
+</td>`;
             tbody.appendChild(tr);
           });
         });
@@ -318,6 +321,59 @@ setTimeout(() => {
     const match = name.includes(keyword) || date.includes(keyword);
     row.style.display = match ? "" : "none";
   });
+}
+
+
+function printInvoice(order) {
+  const invoiceWindow = window.open('', '_blank');
+  const itemsList = order.items?.split('\n').map(item => `<li>${item}</li>`).join('') || '';
+
+  const html = `
+    <html dir="rtl" lang="ar">
+    <head>
+      <title>فاتورة الطلب</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { text-align: center; }
+        ul { list-style: none; padding: 0; }
+        .label { font-weight: bold; }
+        .total { font-size: 1.2em; color: green; }
+        .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+      </style>
+    </head>
+    <body>
+      <h2>🧾 فاتورة الطلب</h2>
+
+      <div class="box"><span class="label">الاسم:</span> ${order.name}</div>
+      <div class="box"><span class="label">الهاتف:</span> ${order.phone}</div>
+      <div class="box"><span class="label">البريد الإلكتروني:</span> ${order.email || '---'}</div>
+      <div class="box"><span class="label">المنطقة:</span> ${order.area}</div>
+      <div class="box"><span class="label">العنوان:</span> ${order.address}</div>
+      <div class="box"><span class="label">طريقة الدفع:</span> ${order.payment}</div>
+
+      <div class="box">
+        <span class="label">المنتجات:</span>
+        <ul>${itemsList}</ul>
+      </div>
+
+      <div class="box"><span class="label">رسوم التوصيل:</span> ${order.deliveryFee} د.أ</div>
+      <div class="box"><span class="label">الخصم:</span> ${order.discountAmount} د.أ</div>
+      <div class="box total"><span class="label">الإجمالي:</span> ${order.total} د.أ</div>
+
+      <hr>
+      <p style="text-align:center;">شكراً لتعاملك معنا 🌟</p>
+    </body>
+    </html>
+  `;
+
+  invoiceWindow.document.open();
+  invoiceWindow.document.write(html);
+  invoiceWindow.document.close();
+
+  // ✅ انتظر تحميل النافذة ثم اطبع
+  invoiceWindow.onload = () => {
+    invoiceWindow.print();
+  };
 }
 
 function deleteProduct(productId) {
