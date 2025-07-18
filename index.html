@@ -51,6 +51,8 @@
             <div class="mb-2"><input class="form-control" id="product-images" placeholder="رابط الصور (مفصولة بفاصلة)"></div>
             <div class="mb-2"><input class="form-control" id="product-available" placeholder="متوفر؟ yes/no"></div>
             <button class="btn btn-success w-100" type="submit">💾 حفظ المنتج</button>
+            <div id="product-message" class="mt-2 text-success fw-bold" style="display: none;"></div>
+
           </form>
         </div>
       </div>
@@ -59,6 +61,9 @@
     <!-- قسم عرض الطلبات -->
     <div class="section">
       <h4 class="mb-3">🧾 الطلبات</h4>
+<div class="mb-3">
+  <input type="text" id="searchOrdersInput" class="form-control" placeholder="🔍 ابحث بالاسم أو التاريخ..." oninput="filterOrders()">
+</div>
       <div class="table-responsive">
         <table class="table table-bordered table-striped" id="ordersTable">
           <thead class="table-light">
@@ -123,27 +128,40 @@
     }
 
     document.getElementById("productForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const data = {
-        id: document.getElementById('product-id').value || Date.now(),
-        name: document.getElementById('product-name').value,
-        price: document.getElementById('product-price').value,
-        oldPrice: document.getElementById('product-oldPrice').value,
-        category: document.getElementById('product-category').value,
-        shortDesc: document.getElementById('product-shortDesc').value,
-        description: document.getElementById('product-description').value,
-        available: document.getElementById('product-available').value,
-        colors: document.getElementById('product-colors').value,
-        images: document.getElementById('product-images').value,
-      };
-      fetch(PRODUCTS_API_URL, {
-        method: "POST",
-        body: JSON.stringify(data),
-      }).then(() => {
-        loadProducts();
-        e.target.reset();
-      });
-    });
+  e.preventDefault();
+
+  const idField = document.getElementById('product-id');
+  const isEdit = !!idField.value;
+
+  const data = {
+    id: idField.value || Date.now(),
+    name: document.getElementById('product-name').value,
+    price: document.getElementById('product-price').value,
+    oldPrice: document.getElementById('product-oldPrice').value,
+    category: document.getElementById('product-category').value,
+    shortDesc: document.getElementById('product-shortDesc').value,
+    description: document.getElementById('product-description').value,
+    available: document.getElementById('product-available').value,
+    colors: document.getElementById('product-colors').value,
+    images: document.getElementById('product-images').value,
+  };
+
+  fetch(PRODUCTS_API_URL, {
+    method: "POST",
+    body: JSON.stringify(data),
+  }).then(() => {
+    loadProducts();
+    e.target.reset();
+    idField.value = "";
+
+    const messageEl = document.getElementById("product-message");
+    messageEl.textContent = isEdit ? "✅ تم تعديل المنتج بنجاح" : "✅ تم إضافة المنتج";
+    messageEl.style.display = "block";
+
+    setTimeout(() => messageEl.style.display = "none", 3000);
+  });
+});
+
 
     // تحميل الطلبات
     function loadOrders() {
@@ -171,6 +189,19 @@
           });
         });
     }
+
+    function filterOrders() {
+  const keyword = document.getElementById("searchOrdersInput").value.toLowerCase();
+  const rows = document.querySelectorAll("#ordersTable tbody tr");
+
+  rows.forEach(row => {
+    const name = row.cells[0].textContent.toLowerCase();     // الاسم
+    const date = row.cells[10].textContent.toLowerCase();    // التاريخ
+
+    const match = name.includes(keyword) || date.includes(keyword);
+    row.style.display = match ? "" : "none";
+  });
+}
 
     loadProducts();
     loadOrders();
