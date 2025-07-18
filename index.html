@@ -54,7 +54,12 @@
             <div class="mb-2"><input class="form-control" id="product-shortDesc" placeholder="الوصف المختصر"></div>
             <div class="mb-2"><input class="form-control" id="product-description" placeholder="الوصف الكامل"></div>
             <div class="mb-2"><input class="form-control" id="product-colors" placeholder="الألوان (مفصولة بفاصلة)"></div>
-            <div class="mb-2"><input class="form-control" id="product-images" placeholder="رابط الصور (مفصولة بفاصلة)"></div>
+            <div class="mb-3">
+  <label for="product-image-file" class="form-label">📷 صور المنتج</label>
+  <input type="file" id="product-image-file" class="form-control mb-2" multiple accept="image/*">
+  <input type="hidden" id="product-images">
+  <div id="upload-status" class="text-muted small"></div>
+</div>
             <div class="mb-2"><input class="form-control" id="product-available" placeholder="متوفر؟ yes/no"></div>
             <button class="btn btn-success w-100" type="submit">💾 حفظ المنتج</button>
             <div id="product-message" class="alert alert-success mt-3" role="alert" style="display: none;"></div>
@@ -248,6 +253,43 @@ function deleteProduct(productId) {
 
     loadProducts();
     loadOrders();
+
+    const cloudName = "dezvuqqrl"; // استبدله باسم حسابك في Cloudinary
+const uploadPreset = "unsigned_preset"; // استبدله بـ unsigned preset من Cloudinary
+
+document.getElementById('product-image-file').addEventListener('change', async function () {
+  const files = this.files;
+  const status = document.getElementById('upload-status');
+  const imageLinks = [];
+
+  status.textContent = '📤 جاري رفع الصور...';
+
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+      if (data.secure_url) {
+        imageLinks.push(data.secure_url);
+      } else {
+        alert("❌ فشل رفع صورة: " + file.name);
+      }
+    } catch (err) {
+      alert("⚠️ خطأ في رفع الصورة: " + err.message);
+    }
+  }
+
+  document.getElementById('product-images').value = imageLinks.join(", ");
+  status.textContent = `✅ تم رفع ${imageLinks.length} صورة`;
+});
+
   </script>
 </body>
 </html>
