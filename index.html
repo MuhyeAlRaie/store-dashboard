@@ -326,7 +326,7 @@ setTimeout(() => {
 
 function printInvoice(order) {
   const invoiceWindow = window.open('', '_blank');
-  const logoUrl = "https://yourdomain.com/logo.png"; // ← عدّل هذا الرابط إلى شعار متجرك
+  const logoUrl = "https://yourdomain.com/logo.png"; // ← عدّل إلى رابط الشعار
 
   const orderId = order.id || new Date(order.date || order.Timestamp).getTime();
   const orderDate = new Date(order.date || order.Timestamp).toLocaleString();
@@ -335,94 +335,99 @@ function printInvoice(order) {
   let itemsTable = '';
 
   const rows = order.items?.split('\n') || [];
-  rows.forEach(line => {
-    const parts = line.split(' x ');
-    const name = parts[0]?.trim() || '';
-    const qtyPart = parts[1]?.split(' = ')[0] || '1';
-    const totalPart = parts[1]?.split(' = ')[1] || '0';
 
-    const quantity = parseInt(qtyPart);
-    const total = parseFloat(totalPart);
-    const unitPrice = total / quantity;
+  // تحميل كل المنتجات للحصول على السعر الحقيقي لكل منتج
+  fetch(PRODUCTS_API_URL)
+    .then(res => res.json())
+    .then(products => {
+      rows.forEach(line => {
+        const parts = line.split(' x ');
+        const rawName = parts[0]?.trim() || '';
+        const qtyPart = parts[1]?.split(' = ')[0] || '1';
+        const quantity = parseInt(qtyPart);
 
-    subtotal += total;
+        // البحث عن المنتج في قائمة المنتجات
+        const product = products.find(p => rawName.includes(p.name.trim()));
 
-    itemsTable += `
-      <tr>
-        <td>${name}</td>
-        <td>${quantity}</td>
-        <td>${unitPrice.toFixed(2)} د.أ</td>
-        <td>${total.toFixed(2)} د.أ</td>
-      </tr>`;
-  });
+        const unitPrice = product ? parseFloat(product.price) : 0;
+        const total = unitPrice * quantity;
+        subtotal += total;
 
-  const isPercentage = (order.coupon || '').trim().endsWith('%');
-  let discountDisplay = `${order.discountAmount} د.أ`;
-  if (isPercentage) {
-    discountDisplay += ` (${order.coupon})`;
-  }
+        itemsTable += `
+          <tr>
+            <td>${product ? product.name : rawName}</td>
+            <td>${quantity}</td>
+            <td>${unitPrice.toFixed(2)} د.أ</td>
+            <td>${total.toFixed(2)} د.أ</td>
+          </tr>`;
+      });
 
-  const html = `
-    <html dir="rtl" lang="ar">
-    <head>
-      <title>🧾 فاتورة الطلب</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-        h2 { text-align: center; margin-bottom: 20px; }
-        .logo { display: block; max-width: 150px; margin: 0 auto 20px; }
-        .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 6px; background: #f9f9f9; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        .label { font-weight: bold; }
-        .total { font-size: 1.2em; color: green; }
-        hr { margin: 30px 0; }
-      </style>
-    </head>
-    <body>
-      <img src="${logoUrl}" alt="Logo" class="logo">
-      <h2>🧾 فاتورة الطلب</h2>
+      const isPercentage = (order.coupon || '').trim().endsWith('%');
+      let discountDisplay = `${order.discountAmount} د.أ`;
+      if (isPercentage) discountDisplay += ` (${order.coupon})`;
 
-      <div class="box"><span class="label">رقم الطلب:</span> ${orderId}</div>
-      <div class="box"><span class="label">تاريخ الطلب:</span> ${orderDate}</div>
-      <div class="box"><span class="label">الاسم:</span> ${order.name}</div>
-      <div class="box"><span class="label">الهاتف:</span> ${order.phone}</div>
-      <div class="box"><span class="label">البريد الإلكتروني:</span> ${order.email || '---'}</div>
-      <div class="box"><span class="label">المنطقة:</span> ${order.area}</div>
-      <div class="box"><span class="label">العنوان:</span> ${order.address}</div>
-      <div class="box"><span class="label">طريقة الدفع:</span> ${order.payment}</div>
+      const html = `
+        <html dir="rtl" lang="ar">
+        <head>
+          <title>🧾 فاتورة الطلب</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+            h2 { text-align: center; margin-bottom: 20px; }
+            .logo { display: block; max-width: 150px; margin: 0 auto 20px; }
+            .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 6px; background: #f9f9f9; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+            .label { font-weight: bold; }
+            .total { font-size: 1.2em; color: green; }
+            hr { margin: 30px 0; }
+          </style>
+        </head>
+        <body>
+          <img src="${logoUrl}" alt="Logo" class="logo">
+          <h2>🧾 فاتورة الطلب</h2>
 
-      <div class="box">
-        <span class="label">المنتجات:</span>
-        <table>
-          <thead>
-            <tr>
-              <th>المنتج</th>
-              <th>الكمية</th>
-              <th>السعر الافرادي</th>
-              <th>المجموع</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemsTable}
-          </tbody>
-        </table>
-      </div>
+          <div class="box"><span class="label">رقم الطلب:</span> ${orderId}</div>
+          <div class="box"><span class="label">تاريخ الطلب:</span> ${orderDate}</div>
+          <div class="box"><span class="label">الاسم:</span> ${order.name}</div>
+          <div class="box"><span class="label">الهاتف:</span> ${order.phone}</div>
+          <div class="box"><span class="label">البريد الإلكتروني:</span> ${order.email || '---'}</div>
+          <div class="box"><span class="label">المنطقة:</span> ${order.area}</div>
+          <div class="box"><span class="label">العنوان:</span> ${order.address}</div>
+          <div class="box"><span class="label">طريقة الدفع:</span> ${order.payment}</div>
 
-      <div class="box"><span class="label">المجموع الفرعي:</span> ${subtotal.toFixed(2)} د.أ</div>
-      <div class="box"><span class="label">الخصم:</span> ${discountDisplay}</div>
-      <div class="box"><span class="label">رسوم التوصيل:</span> ${order.deliveryFee} د.أ</div>
-      <div class="box total"><span class="label">الإجمالي النهائي:</span> ${order.total} د.أ</div>
+          <div class="box">
+            <span class="label">المنتجات:</span>
+            <table>
+              <thead>
+                <tr>
+                  <th>المنتج</th>
+                  <th>الكمية</th>
+                  <th>السعر الافرادي</th>
+                  <th>المجموع</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsTable}
+              </tbody>
+            </table>
+          </div>
 
-      <hr>
-      <p style="text-align:center;">شكراً لتعاملك معنا 🌟</p>
-    </body>
-    </html>
-  `;
+          <div class="box"><span class="label">المجموع الفرعي:</span> ${subtotal.toFixed(2)} د.أ</div>
+          <div class="box"><span class="label">الخصم:</span> ${discountDisplay}</div>
+          <div class="box"><span class="label">رسوم التوصيل:</span> ${order.deliveryFee} د.أ</div>
+          <div class="box total"><span class="label">الإجمالي النهائي:</span> ${order.total} د.أ</div>
 
-  invoiceWindow.document.open();
-  invoiceWindow.document.write(html);
-  invoiceWindow.document.close();
-  invoiceWindow.onload = () => invoiceWindow.print();
+          <hr>
+          <p style="text-align:center;">شكراً لتعاملك معنا 🌟</p>
+        </body>
+        </html>
+      `;
+
+      invoiceWindow.document.open();
+      invoiceWindow.document.write(html);
+      invoiceWindow.document.close();
+      invoiceWindow.onload = () => invoiceWindow.print();
+    });
 }
 
 function deleteProduct(productId) {
