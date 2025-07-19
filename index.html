@@ -326,7 +326,7 @@ setTimeout(() => {
 
 function printInvoice(order) {
   const invoiceWindow = window.open('', '_blank');
-  const logoUrl = "https://yourdomain.com/logo.png"; // ← ضع رابط شعار المتجر
+  const logoUrl = "https://yourdomain.com/logo.png"; // ← رابط الشعار
 
   const orderId = order.id || new Date(order.date || order.Timestamp).getTime();
   const orderDate = new Date(order.date || order.Timestamp).toLocaleString();
@@ -340,24 +340,21 @@ function printInvoice(order) {
     .then(res => res.json())
     .then(products => {
       rows.forEach(line => {
-        // مثال السطر: علب طعام 1*2 x2 = 24
-        const match = line.match(/^(.*?)\s+\d+\*\d+\s+x(\d+)\s+=\s+([\d.]+)$/);
+        const match = line.match(/- \((\d+)\)\s+(.*?)\s+×\s+(\d+)/);
         if (!match) return;
 
-        const rawName = match[1].trim(); // "علب طعام"
-        const quantity = parseInt(match[2]); // 2
-        const total = parseFloat(match[3]); // 24
+        const productId = match[1];
+        const productName = match[2].trim();
+        const quantity = parseInt(match[3]);
 
-        const unitPrice = total / quantity;
+        const product = products.find(p => String(p.id) === productId);
+        const unitPrice = product ? parseFloat(product.price) : 0;
+        const total = unitPrice * quantity;
         subtotal += total;
-
-        // حاول المطابقة مع اسم المنتج في قاعدة البيانات إن أمكن
-        const product = products.find(p => rawName === p.name.trim());
-        const displayName = product ? product.name : rawName;
 
         itemsTable += `
           <tr>
-            <td>${displayName}</td>
+            <td>${productName}</td>
             <td>${quantity}</td>
             <td>${unitPrice.toFixed(2)} د.أ</td>
             <td>${total.toFixed(2)} د.أ</td>
