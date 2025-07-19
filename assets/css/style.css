@@ -1,0 +1,10 @@
+ body { background: #f8f9fa; }
+    .table-responsive { max-height: 400px; overflow-y: auto; }
+    .section { margin-bottom: 60px; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+    #product-message {
+  font-weight: bold;
+  text-align: center;
+  font-size: 1rem;
+  z-index: 9999;
+}
