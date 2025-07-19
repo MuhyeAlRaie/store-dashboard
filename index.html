@@ -326,7 +326,7 @@ setTimeout(() => {
 
 function printInvoice(order) {
   const invoiceWindow = window.open('', '_blank');
-  const logoUrl = "https://yourdomain.com/logo.png"; // ← عدّل إلى رابط الشعار
+  const logoUrl = "https://yourdomain.com/logo.png"; // ← ضع رابط شعار المتجر
 
   const orderId = order.id || new Date(order.date || order.Timestamp).getTime();
   const orderDate = new Date(order.date || order.Timestamp).toLocaleString();
@@ -336,26 +336,28 @@ function printInvoice(order) {
 
   const rows = order.items?.split('\n') || [];
 
-  // تحميل كل المنتجات للحصول على السعر الحقيقي لكل منتج
   fetch(PRODUCTS_API_URL)
     .then(res => res.json())
     .then(products => {
       rows.forEach(line => {
-        const parts = line.split(' x ');
-        const rawName = parts[0]?.trim() || '';
-        const qtyPart = parts[1]?.split(' = ')[0] || '1';
-        const quantity = parseInt(qtyPart);
+        // مثال السطر: علب طعام 1*2 x2 = 24
+        const match = line.match(/^(.*?)\s+\d+\*\d+\s+x(\d+)\s+=\s+([\d.]+)$/);
+        if (!match) return;
 
-        // البحث عن المنتج في قائمة المنتجات
-        const product = products.find(p => rawName.includes(p.name.trim()));
+        const rawName = match[1].trim(); // "علب طعام"
+        const quantity = parseInt(match[2]); // 2
+        const total = parseFloat(match[3]); // 24
 
-        const unitPrice = product ? parseFloat(product.price) : 0;
-        const total = unitPrice * quantity;
+        const unitPrice = total / quantity;
         subtotal += total;
+
+        // حاول المطابقة مع اسم المنتج في قاعدة البيانات إن أمكن
+        const product = products.find(p => rawName === p.name.trim());
+        const displayName = product ? product.name : rawName;
 
         itemsTable += `
           <tr>
-            <td>${product ? product.name : rawName}</td>
+            <td>${displayName}</td>
             <td>${quantity}</td>
             <td>${unitPrice.toFixed(2)} د.أ</td>
             <td>${total.toFixed(2)} د.أ</td>
@@ -402,7 +404,7 @@ function printInvoice(order) {
                 <tr>
                   <th>المنتج</th>
                   <th>الكمية</th>
-                  <th>السعر الافرادي</th>
+                  <th>سعر الوحدة</th>
                   <th>المجموع</th>
                 </tr>
               </thead>
