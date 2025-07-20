@@ -94,13 +94,16 @@ function filterProducts() {
     category: document.getElementById('product-category').value,
     shortDesc: document.getElementById('product-shortDesc').value,
     description: document.getElementById('product-description').value,
-    available: document.getElementById('product-available').value,
     colors: document.getElementById('product-colors').value,
     images: document.getElementById('product-images').value,
+    available: document.getElementById('product-available').value
   };
 
   fetch(PRODUCTS_API_URL, {
     method: "POST",
+     headers: {
+    "Content-Type": "application/json", // ← مهم جدًا
+  },
     body: JSON.stringify(data),
   }).then(() => {
     loadProducts();
