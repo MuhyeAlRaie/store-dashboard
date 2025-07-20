@@ -101,9 +101,6 @@ function filterProducts() {
 
   fetch(PRODUCTS_API_URL, {
     method: "POST",
-     headers: {
-    "Content-Type": "application/json", // ← مهم جدًا
-  },
     body: JSON.stringify(data),
   }).then(() => {
     loadProducts();
