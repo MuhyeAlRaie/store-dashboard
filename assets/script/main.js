@@ -107,6 +107,8 @@ function filterProducts() {
     e.target.reset();
     idField.value = "";
 
+    console.log(JSON.stringify(data));
+
     const messageEl = document.getElementById("product-message");
 messageEl.textContent = isEdit
   ? "✅ تم تعديل المنتج بنجاح"
@@ -300,6 +302,7 @@ function deleteProduct(productId) {
   .then(res => {
     if (res.success) {
       alert("✅ تم حذف المنتج");
+      console.log({ id: productId });
       loadProducts();
     } else {
       alert("❌ فشل الحذف: " + res.message);
