@@ -2,7 +2,7 @@
     const ORDERS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec";
     const STATS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec?stats=true";
     const COUPONS_API_URL = "https://script.google.com/macros/s/AKfycbwzGdb3o1wNNDzuV4AP0Pog9wSlBhqPvznqapsnYOaKhBGRt2edyaN0iHA6bB6EzXTU/exec"; // ← Replace with your actual coupon API URL
-    const HERO_SLIDER_API_URL = "https://script.google.com/macros/s/AKfycby7VOYouaIBSa4jxkBkrCoFsGDGKQmr-vigqvQuC7kLeERLB19qAMXAsKROvEO3dNMp/exec"; // ← Replace with your actual hero slider API URL
+    const HERO_SLIDER_API_URL = "https://script.google.com/macros/s/AKfycbx2bOYD5aMCYvgcKmmpfLVdQctrKsttXSYMNCjfUNJj1tyttY0CM7mVCNPnNRMJYUFf/exec"; // ← Replace with your actual hero slider API URL
     // تحميل المنتجات
     let allProducts = []; // Store all products for filtering
     
