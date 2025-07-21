@@ -1,9 +1,117 @@
-    const PRODUCTS_API_URL = "https://script.google.com/macros/s/AKfycbyTWZ4NdXupMvjEhGclyqLgD_azy_00aDicEtRf_O4_1noUr2N-PfxDeVup8OXViQxgvw/exec";
-    const ORDERS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec";
-    const STATS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec?stats=true";
-    const COUPONS_API_URL = "https://script.google.com/macros/s/AKfycbwzGdb3o1wNNDzuV4AP0Pog9wSlBhqPvznqapsnYOaKhBGRt2edyaN0iHA6bB6EzXTU/exec"; // ← Replace with your actual coupon API URL
-    // const HERO_SLIDER_API_URL = "https://script.google.com/macros/s/AKfycbx2bOYD5aMCYvgcKmmpfLVdQctrKsttXSYMNCjfUNJj1tyttY0CM7mVCNPnNRMJYUFf/exec"; // ← Removed hero slider API URL
-    // تحميل المنتجات
+const PRODUCTS_API_URL = "https://script.google.com/macros/s/AKfycbyTWZ4NdXupMvjEhGclyqLgD_azy_00aDicEtRf_O4_1noUr2N-PfxDeVup8OXViQxgvw/exec";
+const ORDERS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec";
+const STATS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec?stats=true";
+const COUPONS_API_URL = "https://script.google.com/macros/s/AKfycbwzGdb3o1wNNDzuV4AP0Pog9wSlBhqPvznqapsnYOaKhBGRt2edyaN0iHA6bB6EzXTU/exec";
+
+
+const DELIVERY_FEE_API_URL = "https://script.google.com/macros/s/AKfycbz4ThX4G_E2TmgWyvd_TPixtBYE_FaMpAV-wUe7Qw9HlBE8O9bZ_GWDjzsGEdDn8HEB0g/exec"; // ضع هنا رابط Google Apps Script الخاص برسوم التوصيل
+// ==================== DELIVERY FEE MANAGEMENT ====================
+let allDeliveryFees = [];
+
+function loadDeliveryFees() {
+  fetch(DELIVERY_FEE_API_URL)
+    .then(res => res.json())
+    .then(data => {
+      allDeliveryFees = data;
+      displayDeliveryFees(data);
+    })
+    .catch(() => {
+      const tbody = document.querySelector("#deliveryFeeTable tbody");
+      if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">خطأ في تحميل رسوم التوصيل</td></tr>';
+    });
+}
+
+function displayDeliveryFees(fees) {
+  const tbody = document.querySelector("#deliveryFeeTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  fees.forEach(fee => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${fee.area}</td>
+      <td>${fee.fee}</td>
+      <td>${fee.lastModified ? new Date(fee.lastModified).toLocaleDateString() : ''}</td>
+      <td>
+        <button class="btn btn-sm btn-warning me-1" onclick='editDeliveryFee(${JSON.stringify(fee)})'>✎</button>
+        <button class="btn btn-sm btn-danger" onclick='deleteDeliveryFee("${fee.area}")'>🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function editDeliveryFee(fee) {
+  document.getElementById('delivery-fee-original-area').value = fee.area || '';
+  document.getElementById('delivery-fee-area').value = fee.area || '';
+  document.getElementById('delivery-fee-amount').value = fee.fee || '';
+}
+
+function deleteDeliveryFee(area) {
+  if (!confirm(`❗ هل أنت متأكد أنك تريد حذف رسوم التوصيل للمنطقة "${area}"؟`)) return;
+  fetch(DELIVERY_FEE_API_URL + "?_method=DELETE", {
+    method: "POST",
+    body: JSON.stringify({ area })
+  })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        loadDeliveryFees();
+        showDeliveryFeeMessage("✅ تم حذف الرسوم بنجاح");
+      } else {
+        showDeliveryFeeMessage("❌ فشل الحذف: " + (res.error || res.message), 'danger');
+      }
+    })
+    .catch(() => showDeliveryFeeMessage("❌ خطأ أثناء الاتصال بالحذف", 'danger'));
+}
+
+function showDeliveryFeeMessage(message, type = 'success') {
+  const messageEl = document.getElementById("delivery-fee-message");
+  if (!messageEl) return;
+  messageEl.className = `alert alert-${type} mt-3`;
+  messageEl.textContent = message;
+  messageEl.style.display = "block";
+  setTimeout(() => { messageEl.style.display = "none"; }, 3000);
+}
+
+const deliveryFeeForm = document.getElementById("deliveryFeeForm");
+if (deliveryFeeForm) {
+  deliveryFeeForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const originalArea = document.getElementById('delivery-fee-original-area').value;
+    const area = document.getElementById('delivery-fee-area').value.trim();
+    const fee = parseFloat(document.getElementById('delivery-fee-amount').value);
+    if (!area) {
+      alert('❌ يرجى إدخال اسم المنطقة');
+      return;
+    }
+    if (isNaN(fee) || fee < 0) {
+      alert('❌ يرجى إدخال رسوم صحيحة');
+      return;
+    }
+    fetch(DELIVERY_FEE_API_URL, {
+      method: "POST",
+      body: JSON.stringify({ area, fee })
+    })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          loadDeliveryFees();
+          e.target.reset();
+          document.getElementById('delivery-fee-original-area').value = "";
+          showDeliveryFeeMessage("✅ تم حفظ الرسوم بنجاح");
+        } else {
+          showDeliveryFeeMessage("❌ فشل في الحفظ: " + (res.error || res.message), 'danger');
+        }
+      })
+      .catch(() => showDeliveryFeeMessage("❌ فشل في الحفظ، تحقق من الاتصال", 'danger'));
+  });
+}
+
+// تحميل رسوم التوصيل عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', loadDeliveryFees);
+
+
+// تحميل المنتجات
     let allProducts = []; // Store all products for filtering
     
     function loadProducts() { 

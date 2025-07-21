@@ -41,7 +41,7 @@
       <div id="totalRevenue" class="h3 text-success">--</div>
     </div>
   </div>
-</div>
+
 
     <!-- قسم عرض وإدارة المنتجات -->
     <div class="section">
@@ -167,7 +167,38 @@
       </div>
     </div>
 
-
+    <!-- قسم إدارة رسوم التوصيل -->
+    <div class="section">
+      <h4 class="mb-3">🚚 إدارة رسوم التوصيل</h4>
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="table-responsive mb-4">
+            <table class="table table-bordered table-striped" id="deliveryFeeTable">
+              <thead class="table-light">
+                <tr>
+                  <th>المنطقة</th>
+                  <th>رسوم التوصيل (ر.س)</th>
+                  <th>تاريخ التعديل</th>
+                  <th>تعديل</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <h6 class="mb-3">✏️ تعديل / إضافة رسوم توصيل</h6>
+          <form id="deliveryFeeForm">
+            <input type="hidden" id="delivery-fee-original-area">
+            <div class="mb-2"><input class="form-control" id="delivery-fee-area" placeholder="اسم المنطقة" maxlength="50"></div>
+            <div class="mb-2"><input class="form-control" id="delivery-fee-amount" type="number" min="0" step="0.01" placeholder="رسوم التوصيل (ر.س)"></div>
+            <button class="btn btn-success w-100" type="submit">💾 حفظ الرسوم</button>
+            <div id="delivery-fee-message" class="alert alert-success mt-3" role="alert" style="display: none;"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+</div>
 
     <!-- قسم إدارة الكوبونات -->
     <div class="section">
@@ -239,7 +270,9 @@
       </div>
     </div>
   </div>
-</div>
+
+
+
 
   <script src="assets/script/login.js"></script>
   <script src="assets/script/main.js"></script>
