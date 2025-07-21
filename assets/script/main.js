@@ -78,6 +78,8 @@ function filterProducts() {
       document.getElementById('product-images').value = p.images || '';
       document.getElementById('product-colors').value = p.colors || '';
       document.getElementById('product-available').value = p.available || '';
+            document.getElementById('product-stock').value = p.stock || '';
+
     }
 
     document.getElementById("productForm").addEventListener("submit", e => {
@@ -96,7 +98,8 @@ function filterProducts() {
     description: document.getElementById('product-description').value,
     colors: document.getElementById('product-colors').value,
     images: document.getElementById('product-images').value,
-    available: document.getElementById('product-available').value
+    available: document.getElementById('product-available').value,
+    available: document.getElementById('product-stock').value
   };
 
   fetch(PRODUCTS_API_URL, {
