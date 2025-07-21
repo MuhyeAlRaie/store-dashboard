@@ -99,7 +99,7 @@ function filterProducts() {
     colors: document.getElementById('product-colors').value,
     images: document.getElementById('product-images').value,
     available: document.getElementById('product-available').value,
-    available: document.getElementById('product-stock').value
+    stock: document.getElementById('product-stock').value
   };
 
   fetch(PRODUCTS_API_URL, {
