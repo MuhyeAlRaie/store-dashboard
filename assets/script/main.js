@@ -2,7 +2,7 @@
     const ORDERS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec";
     const STATS_API_URL = "https://script.google.com/macros/s/AKfycbw-pT4ThTSIDbAlBfe-r2Q6rIkW9LFYRqWhLqlC8ExvJEb9l0V_WIlR--9F4ze2_ycn/exec?stats=true";
     const COUPONS_API_URL = "https://script.google.com/macros/s/AKfycbwzGdb3o1wNNDzuV4AP0Pog9wSlBhqPvznqapsnYOaKhBGRt2edyaN0iHA6bB6EzXTU/exec"; // ← Replace with your actual coupon API URL
-    const HERO_SLIDER_API_URL = "https://script.google.com/macros/s/AKfycbx2bOYD5aMCYvgcKmmpfLVdQctrKsttXSYMNCjfUNJj1tyttY0CM7mVCNPnNRMJYUFf/exec"; // ← Replace with your actual hero slider API URL
+    // const HERO_SLIDER_API_URL = "https://script.google.com/macros/s/AKfycbx2bOYD5aMCYvgcKmmpfLVdQctrKsttXSYMNCjfUNJj1tyttY0CM7mVCNPnNRMJYUFf/exec"; // ← Removed hero slider API URL
     // تحميل المنتجات
     let allProducts = []; // Store all products for filtering
     
@@ -321,7 +321,7 @@ window.onload = () => {
     loadOrders();
     loadStats();
     loadCoupons(); // ✅ Load coupons on dashboard load
-    loadHeroSlider(); // ✅ Load hero slider on dashboard load
+    // loadHeroSlider(); // Removed hero slider on dashboard load
     loadStock(); // ✅ Load stock data on dashboard load (integrated with products)
 
     // ✅ تحديث كل 10 ثوانٍ (10000 ميلي ثانية)
@@ -330,7 +330,7 @@ window.onload = () => {
       loadOrders();
       loadStats();
       loadCoupons(); // ✅ Refresh coupons periodically
-      loadHeroSlider(); // ✅ Refresh hero slider periodically
+      // loadHeroSlider(); // Removed hero slider periodic refresh
       loadStock(); // ✅ Refresh stock data periodically (integrated with products)
     }, 10000);
   }
@@ -522,185 +522,7 @@ document.getElementById("couponForm").addEventListener("submit", e => {
 
 
 
-// ==================== HERO SLIDER MANAGEMENT FUNCTIONS ====================
 
-// Load hero slider images from Google Sheets
-function loadHeroSlider() {
-  fetch(HERO_SLIDER_API_URL)
-    .then(res => res.json())
-    .then(data => {
-      const tbody = document.querySelector("#heroSliderTable tbody");
-      tbody.innerHTML = '';
-
-      if (Array.isArray(data)) {
-        data.sort((a, b) => (a.Order || 0) - (b.Order || 0)); // Sort by order
-        
-        data.forEach(slide => {
-          const tr = document.createElement("tr");
-          const isActive = slide.Active === true || slide.Active === 'TRUE' || slide.Active === 'true';
-          
-          tr.innerHTML = `
-            <td>${slide.Title || ''}</td>
-            <td>${slide.Subtitle || ''}</td>
-            <td>
-              ${slide.ImageURL ? `<img src="${slide.ImageURL}" style="width: 100px; height: 60px; object-fit: cover; border-radius: 4px;">` : 'لا توجد صورة'}
-            </td>
-            <td>${isActive ? '<span class="badge bg-success">نشط</span>' : '<span class="badge bg-secondary">غير نشط</span>'}</td>
-            <td>${slide.Order || 0}</td>
-            <td>
-              <button class="btn btn-sm btn-warning me-1" onclick='editSlide(${JSON.stringify(slide)})'>✎</button>
-              <button class="btn btn-sm btn-danger" onclick='deleteSlide("${slide.ID}")'>🗑️</button>
-            </td>`;
-          tbody.appendChild(tr);
-        });
-      }
-    })
-    .catch(error => {
-      console.error('Error loading hero slider:', error);
-      const tbody = document.querySelector("#heroSliderTable tbody");
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">خطأ في تحميل صور البانر</td></tr>';
-    });
-}
-
-// Edit slide - populate form with slide data
-function editSlide(slide) {
-  document.getElementById('slide-id').value = slide.ID || '';
-  document.getElementById('slide-title').value = slide.Title || '';
-  document.getElementById('slide-subtitle').value = slide.Subtitle || '';
-  document.getElementById('slide-image-url').value = slide.ImageURL || '';
-  document.getElementById('slide-order').value = slide.Order || 0;
-  
-  // Handle active status
-  const isActive = slide.Active === true || slide.Active === 'TRUE' || slide.Active === 'true';
-  document.getElementById('slide-active').value = isActive ? 'true' : 'false';
-}
-
-// Delete slide
-function deleteSlide(slideId) {
-  if (!confirm(`❗ هل أنت متأكد أنك تريد حذف هذه الصورة؟`)) return;
-
-  fetch(HERO_SLIDER_API_URL + "?_method=DELETE", {
-    method: "POST",
-    body: JSON.stringify({ id: slideId })
-  })
-  .then(res => res.json())
-  .then(res => {
-    if (res.success) {
-      alert("✅ تم حذف الصورة");
-      loadHeroSlider();
-    } else {
-      alert("❌ فشل الحذف: " + (res.error || res.message));
-    }
-  })
-  .catch(error => {
-    console.error('Error deleting slide:', error);
-    alert("❌ خطأ أثناء الاتصال بالحذف");
-  });
-}
-
-// Handle hero slider form submission
-document.getElementById("heroSliderForm").addEventListener("submit", e => {
-  e.preventDefault();
-
-  const id = document.getElementById('slide-id').value;
-  const title = document.getElementById('slide-title').value.trim();
-  const subtitle = document.getElementById('slide-subtitle').value.trim();
-  const imageURL = document.getElementById('slide-image-url').value.trim();
-  const active = document.getElementById('slide-active').value === 'true';
-  const order = parseInt(document.getElementById('slide-order').value) || 0;
-
-  // Validation
-  if (!title) {
-    alert('❌ يرجى إدخال العنوان الرئيسي');
-    return;
-  }
-
-  if (!imageURL) {
-    alert('❌ يرجى رفع صورة للبانر');
-    return;
-  }
-
-  const isEdit = !!id;
-  const data = {
-    id: id || undefined,
-    title: title,
-    subtitle: subtitle,
-    imageURL: imageURL,
-    active: active,
-    order: order
-  };
-
-  fetch(HERO_SLIDER_API_URL, {
-    method: "POST",
-    body: JSON.stringify(data),
-  })
-  .then(res => res.json())
-  .then(res => {
-    if (res.success) {
-      loadHeroSlider();
-      e.target.reset();
-      document.getElementById('slide-id').value = "";
-      document.getElementById('slide-image-url').value = "";
-
-      const messageEl = document.getElementById("slide-message");
-      messageEl.textContent = isEdit
-        ? "✅ تم تعديل صورة البانر بنجاح"
-        : "✅ تم إضافة صورة البانر";
-      messageEl.className = "alert alert-success mt-3";
-      messageEl.style.display = "block";
-
-      setTimeout(() => {
-        messageEl.style.display = "none";
-      }, 3000);
-    } else {
-      const messageEl = document.getElementById("slide-message");
-      messageEl.classList.remove("alert-success");
-      messageEl.classList.add("alert-danger");
-      messageEl.textContent = "❌ فشل في الحفظ: " + (res.error || res.message);
-      messageEl.style.display = "block";
-    }
-  })
-  .catch(error => {
-    console.error('Error saving slide:', error);
-    const messageEl = document.getElementById("slide-message");
-    messageEl.classList.remove("alert-success");
-    messageEl.classList.add("alert-danger");
-    messageEl.textContent = "❌ فشل في الحفظ، تحقق من الاتصال";
-    messageEl.style.display = "block";
-  });
-});
-
-// Handle slide image upload to Cloudinary
-document.getElementById('slide-image-file').addEventListener('change', async function () {
-  const file = this.files[0];
-  if (!file) return;
-
-  const status = document.getElementById('slide-upload-status');
-  status.textContent = '📤 جاري رفع الصورة...';
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
-
-  try {
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await res.json();
-    if (data.secure_url) {
-      document.getElementById('slide-image-url').value = data.secure_url;
-      status.textContent = '✅ تم رفع الصورة بنجاح';
-    } else {
-      alert("❌ فشل رفع الصورة");
-      status.textContent = '❌ فشل رفع الصورة';
-    }
-  } catch (err) {
-    alert("⚠️ خطأ في رفع الصورة: " + err.message);
-    status.textContent = '❌ خطأ في رفع الصورة';
-  }
-});
 
 
 // ==================== STOCK MANAGEMENT FUNCTIONS (Integrated with Products API) ====================
